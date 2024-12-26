@@ -6,7 +6,6 @@ import {
   TemplateRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Content, fetchOneEntry } from '@builder.io/sdk-angular';
 
 // ====================================== this is the issue ================================================
 @Component({
@@ -30,6 +29,9 @@ export class CompleteComponent {
         content: myContent
       "
     ></ng-container>`,
+  host: {
+    ngSkipHydration: 'true',
+  },
 })
 export class NgComponentOutletCompleteExample {
   CompleteComponent = CompleteComponent;
@@ -51,11 +53,34 @@ export class NgComponentOutletCompleteExample {
 // =========================================================================================================
 
 @Component({
+  selector: 'skip-hydration-wrapper',
+  standalone: true,
+  template: `<ng-content></ng-content>`,
+  host: {
+    ngSkipHydration: 'true',
+  },
+})
+export class SkipHydrationWrapper {}
+
+@Component({
   selector: 'app-root',
   standalone: true,
   // issue --------------------------------------------------------------------------------------------------------
-  imports: [CommonModule, NgComponentOutletCompleteExample, CompleteComponent],
-  template: ` <example /> `,
+  imports: [
+    CommonModule,
+    NgComponentOutletCompleteExample,
+    SkipHydrationWrapper,
+  ],
+  template: `
+    <div>hello world</div>
+    <div>
+      <h1>hello world</h1>
+      <skip-hydration-wrapper>
+        <example> from inside</example>
+      </skip-hydration-wrapper>
+    </div>
+    <!-- <example> from inside</example> -->
+  `,
   // --------------------------------------------------------------------------------------------------------
   // template: `<builder-content
   //   model="page"
@@ -63,7 +88,18 @@ export class NgComponentOutletCompleteExample {
   //   [content]="content"
   // />`,
   // imports: [Content],
+  // host: {
+  //   ngSkipHydration: 'true',
+  // },
 })
 export class AppComponent {
   content = null as any;
+  // ngOnInit() {
+  //   fetchOneEntry({
+  //     model: 'page',
+  //     apiKey: 'ad30f9a246614faaa6a03374f83554c9',
+  //   }).then((content) => {
+  //     this.content = content;
+  //   });
+  // }
 }
